@@ -11,5 +11,5 @@ timeout = 60
 use = egg:syncserver
 
 [syncserver]
-public_url = http://{{ server_hostname }}:{{ server_port }}/
+public_url = http://{{ server_hostname }}/
 allow_new_users = true

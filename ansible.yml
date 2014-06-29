@@ -8,7 +8,6 @@
     # For instance, "127.0.0.1" IS NOT the same as "localhost" in this context
     # since the strings themselves are different.
     server_hostname: "192.168.33.78"
-    server_port: 80
 
     syncserver_version: HEAD
 
@@ -101,7 +100,7 @@
     # -- Print some helpful information for getting started --
 
     - name: Finishing up...
-      debug: msg="Congratulations! Your sync server is now running at http://{{ server_hostname }}:{{ server_port }}/"
+      debug: msg="Congratulations! Your sync server is now running at http://{{ server_hostname }}/"
 
   handlers:
 

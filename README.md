@@ -33,6 +33,7 @@ Configuring Firefox:
 
 - By default, you can only connect to the sync server from the host it's running on.
 - No SSL. Which is kind of moot, given the above.
+- Must run on port 80.
 - Uses Mozilla's hosted Firefox Accounts service for authentication, rather than handling authentication itself.
 - No access control, happily stores data for any and all users that attempt to contact it.
 - Checks out the current development head of [mozilla-services/syncserver](https://github.com/mozilla-services/syncserver), rather than a specific release or tag.
@@ -45,6 +46,8 @@ __To understand what's going on:__
 - Read the `ansible.yml` file.
 - Use `vagrant ssh` to get a shell on the VM.
 - Watch for logs in `/var/log/upstart/syncserver.log` on the VM.
+- Watch for Sync traffic in the Firefox browser log (<kbd>Cmd+Shift+J</kbd>).
+- Check for Sync errors in [about:sync-log](about:sync-log).
 
 __To expose the service more publicly:__
 
@@ -52,8 +55,8 @@ __To expose the service more publicly:__
 
 2. Run `vagrant reload` to restart the VM with the new networking configuration.
 
-2. Edit `ansible.yml` and change the `sever_hostname` and `server_port` to reflect the way you'll be accessing the service.
-   For example, `server_hostname: sync.example.org` and `server_port: 80` would correspond to a `services.sync.tokenServerURI` of `http://sync.example.org:80/token/1.0/sync/1.5`.
+2. Edit `ansible.yml` and change the `sever_hostname` to reflect the way you'll be accessing the service.
+   For example, `server_hostname: sync.example.org` would correspond to a `services.sync.tokenServerURI` of `http://sync.example.org/token/1.0/sync/1.5`.
 
 4. Run `vagrant provision` to update the syncserver configuration.
 

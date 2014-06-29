@@ -1,5 +1,5 @@
 server {
-	listen {{ server_port }};
+	listen 80;
 	server_name {{ server_hostname }};
 
 	location / {
