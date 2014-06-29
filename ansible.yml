@@ -1,0 +1,112 @@
+- hosts: all
+  gather_facts: no
+  sudo: yes
+
+  vars:
+
+    # This must EXACTLY match the host that the browser uses to access sync.
+    # For instance, "127.0.0.1" IS NOT the same as "localhost" in this context
+    # since the strings themselves are different.
+    server_hostname: "192.168.33.78"
+    server_port: 80
+
+    syncserver_version: HEAD
+
+  tasks:
+
+    # -- Use NTP to set the local clock --
+
+    - name: Install ntpd
+      apt: name=ntp state=present install_recommends=no
+
+    - name: Ensure ntpd is running
+      service: name=ntp state=started enabled=yes
+
+    # -- Create a user to run the sync server --
+
+    - user: name=app state=present
+
+    # -- Install the sync server itself --
+
+    - name: Install dependencies
+      apt: name={{ item }} state=present install_recommends=no
+      with_items:
+        - build-essential # gcc, make, etc.
+        - ca-certificates
+        - curl
+        - git
+        - libzmq-dev
+        - python-dev
+        - python-pip
+        - python-virtualenv
+
+    - name: Fetch syncserver source
+      sudo_user: app
+      git: repo=https://github.com/mozilla-services/syncserver.git
+           dest=/home/app/syncserver
+           version={{ syncserver_version | default("HEAD") }}
+           update=no # Do not update the repo on subsequent runs
+
+    - name: Create virtualenv for syncserver
+      sudo_user: app
+      command: make build
+               chdir=/home/app/syncserver
+               creates=/home/app/syncserver/local
+
+    # -- Install Gunicorn to run the syncserver --
+
+    - name: Install gunicorn into the syncserver virtualenv
+      sudo_user: app
+      pip: name=gunicorn version=19 state=present
+           virtualenv=/home/app/syncserver/local
+
+    - name: Configure syncserver to use gunicorn
+      sudo_user: app
+      template: src=templates/gunicorn.template
+                dest=/home/app/syncserver/syncserver.ini
+                mode=0600
+      notify:
+        - Restart Gunicorn
+
+    - name: Create upstart script for Gunicorn
+      # Not using Upstart? See the Gunicorn docs for other init systems:
+      # http://docs.gunicorn.org/en/latest/deploy.html
+      copy: src=templates/upstart.template
+            dest=/etc/init/syncserver.conf
+            mode=0644
+
+    - name: Ensure syncserver is running
+      service: name=syncserver state=started enabled=yes
+
+    # -- Set up Nginx to reverse proxy to Gunicorn --
+
+    - name: Install nginx
+      apt: name=nginx state=present install_recommends=no
+
+    - name: Disable default nginx site
+      file: path=/etc/nginx/sites-enabled/default state=absent
+
+    - name: Add syncserver configuration
+      template: src=templates/nginx.template
+                dest=/etc/nginx/sites-available/syncserver
+                mode=0644
+
+    - name: Enable syncserver
+      file: src=/etc/nginx/sites-available/syncserver
+            dest=/etc/nginx/sites-enabled/syncserver
+            state=link
+      notify:
+        - Restart Nginx
+
+    # -- Print some helpful information for getting started --
+
+    - name: Finishing up...
+      debug: msg="Congratulations! Your sync server is now running at http://{{ server_hostname }}:{{ server_port }}/"
+
+  handlers:
+
+    - name: Restart Nginx
+      service: name=nginx state=restarted
+
+    - name: Restart Gunicorn
+      service: name=syncserver state=restarted

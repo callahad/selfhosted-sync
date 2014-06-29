@@ -1,0 +1,11 @@
+description "Firefox Sync server"
+
+start on (filesystem)
+stop on runlevel [016]
+
+respawn
+console log
+setuid app
+chdir /home/app/syncserver
+
+exec ./local/bin/gunicorn --paste syncserver.ini

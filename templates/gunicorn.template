@@ -1,0 +1,15 @@
+# vim: set filetype=dosini :
+
+[server:main]
+use = egg:gunicorn
+host = 127.0.0.1
+port = 5000
+workers = 2
+timeout = 60
+
+[app:main]
+use = egg:syncserver
+
+[syncserver]
+public_url = http://{{ server_hostname }}:{{ server_port }}/
+allow_new_users = true
