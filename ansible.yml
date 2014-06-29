@@ -11,6 +11,7 @@
 
     syncserver_version: HEAD
 
+    allow_signups: true
 
   vars_files:
   - [ secret.yml, secret.yml.example ]

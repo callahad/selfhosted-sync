@@ -13,4 +13,4 @@ use = egg:syncserver
 [syncserver]
 public_url = http://{{ server_hostname }}/
 secret = {{ secret | default(generated_secret.stdout) }}
-allow_new_users = true
+allow_new_users = {{ 'true' if allow_signups else 'false' }}

@@ -63,7 +63,7 @@ __To expose the service more publicly:__
 
 __To disable account creation:__
 
-1. Edit `templates/gunicorn.template` and change `allow_new_users` to `false`.
+1. Edit `ansible.yml` and change `allow_signups` to `false`.
 2. Run `vagrant provision` to apply your changes.
 
 __To set a static secret:__
