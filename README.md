@@ -34,6 +34,7 @@ Configuring Firefox:
 - By default, you can only connect to the sync server from the host it's running on.
 - No SSL. Which is kind of moot, given the above.
 - Must run on port 80.
+- Regenerates the signing secret on every provision, which causes an error to appear on connected browsers.
 - Uses Mozilla's hosted Firefox Accounts service for authentication, rather than handling authentication itself.
 - No access control, happily stores data for any and all users that attempt to contact it.
 - Checks out the current development head of [mozilla-services/syncserver](https://github.com/mozilla-services/syncserver), rather than a specific release or tag.
@@ -64,6 +65,10 @@ __To disable account creation:__
 
 1. Edit `templates/gunicorn.template` and change `allow_new_users` to `false`.
 2. Run `vagrant provision` to apply your changes.
+
+__To set a static secret:__
+
+1. Follow the directions in `secret.yml.example`.
 
 ## Further Reading
 

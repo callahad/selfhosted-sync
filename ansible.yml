@@ -11,6 +11,11 @@
 
     syncserver_version: HEAD
 
+
+  vars_files:
+  - [ secret.yml, secret.yml.example ]
+
+
   tasks:
 
     # -- Use NTP to set the local clock --
@@ -58,6 +63,11 @@
       sudo_user: app
       pip: name=gunicorn version=19 state=present
            virtualenv=/home/app/syncserver/local
+
+    - name: Generate a random secret to use with the tokenserver
+      shell: head -c 32 /dev/urandom | shasum | awk '{{ print $1 }}'
+      register: generated_secret
+      when: secret is not defined
 
     - name: Configure syncserver to use gunicorn
       sudo_user: app
