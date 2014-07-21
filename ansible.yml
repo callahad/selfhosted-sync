@@ -9,7 +9,10 @@
     # since the strings themselves are different.
     server_hostname: "192.168.33.78"
 
-    syncserver_version: HEAD
+    sync_server_version: HEAD
+    auth_server_version: HEAD
+    auth_db_server_version: HEAD
+    content_server_version: HEAD
 
     allow_signups: true
 
@@ -34,29 +37,56 @@
     # -- Install the sync server itself --
 
     - name: Install dependencies
-      apt: name={{ item }} state=present install_recommends=no
+      apt: name={{ item }} state=present install_recommends=no update_cache=yes
       with_items:
         - build-essential # gcc, make, etc.
         - ca-certificates
         - curl
         - git
+        - libgmp-dev
         - libzmq-dev
+        - mysql-server
+        - nodejs # 0.10.x
+        - nodejs-legacy # Provides a /usr/bin/node -> /usr/bin/nodejs symlink
+        - npm
         - python-dev
         - python-pip
         - python-virtualenv
 
-    - name: Fetch syncserver source
+    - name: Fetch all components from git
       sudo_user: app
-      git: repo=https://github.com/mozilla-services/syncserver.git
-           dest=/home/app/syncserver
-           version={{ syncserver_version | default("HEAD") }}
+      git: repo=https://github.com/{{ item.acct }}/{{ item.repo }}.git
+           dest=/home/app/{{ item.repo }}
+           version={{ item.ref }}
            update=no # Do not update the repo on subsequent runs
+      with_items:
+        - { acct: 'mozilla', repo: 'fxa-auth-server',
+            ref: '{{ auth_server_version | default("HEAD") }}' }
 
-    - name: Create virtualenv for syncserver
+        - { acct: 'mozilla', repo: 'fxa-auth-db-server',
+            ref: '{{ auth_db_server_version | default("HEAD") }}' }
+
+        - { acct: 'mozilla', repo: 'fxa-content-server',
+            ref: '{{ content_server_version | default("HEAD") }}' }
+
+        - { acct: 'mozilla-services', repo: 'syncserver',
+            ref: '{{ sync_server_version | default("HEAD") }}' }
+
+    - name: Create Python virtualenv for the syncserver
       sudo_user: app
       command: make build
                chdir=/home/app/syncserver
                creates=/home/app/syncserver/local
+
+    - name: Install Node.js dependencies for each FxA component
+      sudo_user: app
+      command: npm install --production
+               chdir=/home/app/{{ item }}
+               creates=/home/app/{{ item }}/node_modules
+      with_items:
+        - fxa-auth-server # Anomaly; has devDependencies in npm-shrinkwrap.json. Also relies on SQS?
+        - fxa-auth-db-server
+        - fxa-content-server
 
     # -- Install Gunicorn to run the syncserver --
 
@@ -81,7 +111,7 @@
     - name: Create upstart script for Gunicorn
       # Not using Upstart? See the Gunicorn docs for other init systems:
       # http://docs.gunicorn.org/en/latest/deploy.html
-      copy: src=templates/upstart.template
+      copy: src=templates/syncserver-upstart.template
             dest=/etc/init/syncserver.conf
             mode=0644
 
