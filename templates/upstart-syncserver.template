@@ -1,5 +1,8 @@
 description "Firefox Sync server"
 
+# Not using Upstart? See the Gunicorn docs for other init systems:
+# http://docs.gunicorn.org/en/latest/deploy.html
+
 start on (filesystem)
 stop on runlevel [016]
 

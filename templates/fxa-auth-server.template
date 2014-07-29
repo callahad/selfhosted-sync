@@ -1,0 +1,27 @@
+{
+  "publicUrl": "http://{{ server_hostname }}:9000",
+  "listen": {
+    "host": "0.0.0.0"
+  },
+  "contentServer": {
+    "url": "http://{{ server_hostname }}:3030"
+  },
+  "smtp": {
+    "host": "127.0.0.1",
+    "port": 9999,
+    "secure": false,
+    "sender": "no-reply@example.com",
+    "resendBlackoutPeriod": 0
+  },
+  "toobusy": {
+    "maxLag": 0
+  },
+  "log": {
+    "level": "info"
+  },
+  "verifierVersion": 0,
+  "bounces": {
+    "region": "us-east-1"
+  },
+  "customsUrl": "none"
+}

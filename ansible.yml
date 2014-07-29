@@ -88,6 +88,17 @@
         - fxa-auth-db-server
         - fxa-content-server
 
+    - name: Add FxA configuration files
+      sudo_user: app
+      template: src=templates/{{ item.name }}.template
+                dest=/home/app/{{ item.name }}/{{ item.path }}
+                mode=0600
+      with_items:
+        - { name: 'fxa-auth-server', path: 'config/dev.json' }
+        - { name: 'fxa-content-server', path: 'server/config/local.json' }
+      notify:
+        - Restart all FxA components
+
     # -- Install Gunicorn to run the syncserver --
 
     - name: Install gunicorn into the syncserver virtualenv
@@ -108,15 +119,23 @@
       notify:
         - Restart Gunicorn
 
-    - name: Create upstart script for Gunicorn
-      # Not using Upstart? See the Gunicorn docs for other init systems:
-      # http://docs.gunicorn.org/en/latest/deploy.html
-      copy: src=templates/syncserver-upstart.template
-            dest=/etc/init/syncserver.conf
-            mode=0644
+    # -- Start all services
 
-    - name: Ensure syncserver is running
-      service: name=syncserver state=started enabled=yes
+    - name: Create Upstart scripts
+      copy: src=templates/upstart-{{ item }}.template
+            dest=/etc/init/{{ item }}.conf
+            mode=0644
+      with_items:
+        - fxa-auth-server
+        - fxa-content-server
+        - syncserver
+
+    - name: Ensure services are running
+      service: name={{ item }} state=started enabled=yes
+      with_items:
+        - fxa-auth-server
+        - fxa-content-server
+        - syncserver
 
     # -- Set up Nginx to reverse proxy to Gunicorn --
 
@@ -126,7 +145,7 @@
     - name: Disable default nginx site
       file: path=/etc/nginx/sites-enabled/default state=absent
 
-    - name: Add syncserver configuration
+    - name: Configure nginx for the syncserver
       template: src=templates/nginx.template
                 dest=/etc/nginx/sites-available/syncserver
                 mode=0644
@@ -138,11 +157,6 @@
       notify:
         - Restart Nginx
 
-    # -- Print some helpful information for getting started --
-
-    - name: Finishing up...
-      debug: msg="Congratulations! Your sync server is now running at http://{{ server_hostname }}/"
-
   handlers:
 
     - name: Restart Nginx
@@ -150,3 +164,9 @@
 
     - name: Restart Gunicorn
       service: name=syncserver state=restarted
+
+    - name: Restart all FxA components
+      service: name={{ item }} state=restarted
+      with_items:
+        - fxa-content-server
+        - fxa-auth-server

@@ -1,0 +1,11 @@
+description "Firefox Accounts auth server"
+
+start on (filesystem)
+stop on runlevel [016]
+
+respawn
+console log
+setuid app
+chdir /home/app/fxa-content-server
+
+exec /usr/bin/npm start
