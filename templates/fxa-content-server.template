@@ -1,6 +1,6 @@
 {
-  "fxaccount_url": "http://{{ server_hostname }}:9000",
-  "public_url": "http://{{ server_hostname }}:3030",
+  "fxaccount_url": "https://{{ server_hostname }}:9011",
+  "public_url": "https://{{ server_hostname }}",
   "fxaccount_proxy": {
     "enabled": true
   },

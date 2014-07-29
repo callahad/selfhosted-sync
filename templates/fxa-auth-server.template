@@ -1,10 +1,11 @@
 {
-  "publicUrl": "http://{{ server_hostname }}:9000",
+  "publicUrl": "https://{{ server_hostname }}:9011",
   "listen": {
-    "host": "0.0.0.0"
+    "host": "0.0.0.0",
+    "port": 9000
   },
   "contentServer": {
-    "url": "http://{{ server_hostname }}:3030"
+    "url": "https://{{ server_hostname }}"
   },
   "smtp": {
     "host": "127.0.0.1",

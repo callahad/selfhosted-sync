@@ -99,6 +99,16 @@
       notify:
         - Restart all FxA components
 
+    - name: Create a self-signed SSL certificate
+      command: openssl req -new -nodes -x509 -days 3650
+               -subj "/CN={{ server_hostname }}"
+               -out "/etc/ssl/certs/{{ server_hostname }}.crt"
+               -keyout "/etc/ssl/private/{{ server_hostname }}.key"
+               -extensions v3_ca
+               creates="/etc/ssl/private/{{ server_hostname }}.key"
+      notify:
+        - Restart all FxA components
+
     # -- Install Gunicorn to run the syncserver --
 
     - name: Install gunicorn into the syncserver virtualenv
