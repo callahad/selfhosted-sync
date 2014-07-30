@@ -10,9 +10,9 @@
     server_hostname: "192.168.33.78"
 
     sync_server_version: HEAD
-    auth_server_version: HEAD
-    auth_db_server_version: HEAD
-    content_server_version: HEAD
+    auth_server_version: train-17
+    auth_db_server_version: train-17
+    content_server_version: train-17
 
     allow_signups: true
 
