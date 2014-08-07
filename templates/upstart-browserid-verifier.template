@@ -1,0 +1,14 @@
+description "BrowserID Verifier"
+
+start on (filesystem)
+stop on runlevel [016]
+
+respawn
+console log
+setuid app
+chdir /home/app/browserid-verifier
+
+env INSECURE_SSL=true
+env PORT=8980
+
+exec /usr/bin/npm start

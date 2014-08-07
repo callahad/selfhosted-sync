@@ -13,6 +13,7 @@
     auth_server_version: train-17
     auth_db_server_version: train-17
     content_server_version: train-17
+    verifier_version: HEAD
 
     allow_signups: true
 
@@ -69,6 +70,9 @@
         - { acct: 'mozilla', repo: 'fxa-content-server',
             ref: '{{ content_server_version | default("HEAD") }}' }
 
+        - { acct: 'mozilla', repo: 'browserid-verifier',
+            ref: '{{ verifier_version | default("HEAD") }}' }
+
         - { acct: 'mozilla-services', repo: 'syncserver',
             ref: '{{ sync_server_version | default("HEAD") }}' }
 
@@ -87,6 +91,7 @@
         - fxa-auth-server # Anomaly; has devDependencies in npm-shrinkwrap.json. Also relies on SQS?
         - fxa-auth-db-server
         - fxa-content-server
+        - browserid-verifier
 
     - name: Add FxA configuration files
       sudo_user: app
@@ -138,6 +143,7 @@
       with_items:
         - fxa-auth-server
         - fxa-content-server
+        - browserid-verifier
         - syncserver
 
     - name: Ensure services are running
@@ -145,6 +151,7 @@
       with_items:
         - fxa-auth-server
         - fxa-content-server
+        - browserid-verifier
         - syncserver
 
     # -- Set up Nginx to reverse proxy to Gunicorn --

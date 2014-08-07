@@ -11,6 +11,9 @@ timeout = 60
 use = egg:syncserver
 
 [syncserver]
-public_url = http://{{ server_hostname }}/
+public_url = http://{{ server_hostname }}:8080/
 secret = {{ secret | default(generated_secret.stdout) }}
 allow_new_users = {{ 'true' if allow_signups else 'false' }}
+
+[browserid]
+verifier_url = http://127.0.0.1:8980/v2
